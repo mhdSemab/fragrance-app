@@ -2,90 +2,64 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasFactory, Notifiable;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
     protected $fillable = [
         'name',
         'email',
         'password',
+        'role',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'password' => 'hashed',
+    ];
+
     /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
+     * Check if the user has a specific role
      */
-    protected function casts(): array
+    public function hasRole(string $roleName): bool
     {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
-    }
-
-    public function roles(): BelongsToMany
-    {
-        return $this->belongsToMany(Role::class);
-    }
-
-    public function hasRole($roleName): bool
-    {
-        return $this->roles->contains('name', $roleName);
-    }
-
-    public function hasAnyRole($roles): bool
-    {
-        if (is_array($roles)) {
-            foreach ($roles as $role) {
-                if ($this->hasRole($role)) {
-                    return true;
-                }
-            }
-            return false;
-        }
-        
-        return $this->hasRole($roles);
+        return $this->role === $roleName;
     }
 
     /**
-     * Check if the user has all of the given roles
+     * Check if the user has any of the given roles
      */
-    public function hasAllRoles($roles): bool
+    public function hasAnyRole(array|string $roles): bool
     {
-        if (is_array($roles)) {
-            foreach ($roles as $role) {
-                if (!$this->hasRole($role)) {
-                    return false;
-                }
-            }
-            return true;
+        if (is_string($roles)) {
+            return $this->hasRole($roles);
         }
-        
-        return $this->hasRole($roles);
+
+        return in_array($this->role, $roles);
+    }
+
+    /**
+     * Check if the user is an admin
+     */
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
+    }
+
+    /**
+     * Check if the user is a seller
+     */
+    public function isSeller(): bool
+    {
+        return $this->role === 'seller';
     }
 }

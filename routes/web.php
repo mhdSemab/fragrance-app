@@ -1,42 +1,46 @@
 <?php
 
-use App\Http\Controllers\PropertyController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\AdminController;
+use App\Http\Controllers\FragranceController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-// Public routes
 Route::get('/', function () {
-    // Redirect to properties index instead of showing Welcome page
-    return redirect()->route('properties.index');
+    return Inertia::render('Welcome', [
+        'canLogin' => Route::has('login'),
+        'canRegister' => Route::has('register'),
+        'laravelVersion' => Application::VERSION,
+        'phpVersion' => PHP_VERSION,
+    ]);
 });
 
-// Auth protected routes
-Route::middleware(['auth'])->group(function () {
-    // Properties routes (accessible by all authenticated users)
-    Route::get('/properties', [PropertyController::class, 'index'])->name('properties.index');
-    Route::get('/properties/{property}', [PropertyController::class, 'show'])->name('properties.show');
-    Route::get('/about', [PropertyController::class, 'about'])->name('properties.about');
+Route::get('/dashboard', function () {
+    return Inertia::render('Dashboard');
+})->middleware(['auth', 'verified'])->name('dashboard');
 
-    // Agent and Admin only routes
-    Route::middleware(['role:admin,agent'])->group(function () {
-        Route::get('/properties/create', [PropertyController::class, 'create'])->name('properties.create');
-        Route::post('/properties', [PropertyController::class, 'store'])->name('properties.store');
-        Route::get('/properties/{property}/edit', [PropertyController::class, 'edit'])->name('properties.edit');
-        Route::patch('/properties/{property}', [PropertyController::class, 'update'])->name('properties.update');
-        Route::delete('/properties/{property}', [PropertyController::class, 'destroy'])->name('properties.destroy');
-    });
+// Static About page route
+Route::get('/about', function () {
+    return Inertia::render('Fragrances/About');
+})->name('about');
 
-    // Admin only routes
-    Route::middleware(['role:admin'])->group(function () {
-        Route::get('/admin/dashboard', function () {
-            return Inertia::render('Admin/Dashboard');
-        })->name('admin.dashboard');
-    });
+// Fragrance routes
+Route::get('/fragrances', [FragranceController::class, 'index'])->name('fragrances.index');
 
-    // Profile routes
+// Protected fragrance routes that require authentication and specific roles
+Route::middleware(['auth', 'role:admin,seller'])->group(function () {
+    Route::resource('fragrances', FragranceController::class)
+        ->except(['index', 'show'])
+        ->names([
+            'create' => 'fragrances.create',
+            'store' => 'fragrances.store',
+            'edit' => 'fragrances.edit',
+            'update' => 'fragrances.update',
+            'destroy' => 'fragrances.destroy',
+        ]);
+});
+
+Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
