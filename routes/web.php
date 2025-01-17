@@ -25,22 +25,24 @@ Route::get('/about', function () {
 })->name('about');
 
 // Fragrance routes
-Route::get('/fragrances', [FragranceController::class, 'index'])->name('fragrances.index');
+// Auth protected routes
+Route::middleware(['auth'])->group(function () {
+    // Basic routes
+    Route::get('/fragrances', [FragranceController::class, 'index'])->name('fragrances.index');
+    
+    // Admin and Seller routes - These need to come BEFORE the show route
+    Route::middleware(['role:admin,seller'])->group(function () {
+        Route::get('/fragrances/create', [FragranceController::class, 'create'])->name('fragrances.create');
+        Route::post('/fragrances', [FragranceController::class, 'store'])->name('fragrances.store');
+    });
 
-// Protected fragrance routes that require authentication and specific roles
-Route::middleware(['auth', 'role:admin,seller'])->group(function () {
-    Route::resource('fragrances', FragranceController::class)
-        ->except(['index', 'show'])
-        ->names([
-            'create' => 'fragrances.create',
-            'store' => 'fragrances.store',
-            'edit' => 'fragrances.edit',
-            'update' => 'fragrances.update',
-            'destroy' => 'fragrances.destroy',
-        ]);
-});
+    // Show route must come after /create to avoid conflicts
+    Route::get('/fragrances/{fragrance}', [FragranceController::class, 'show'])->name('fragrances.show');
+    Route::get('/fragrances/{fragrance}/edit', [FragranceController::class, 'edit'])->name('fragrances.edit');
+    Route::patch('/fragrances/{fragrance}', [FragranceController::class, 'update'])->name('fragrances.update');
+    Route::delete('/fragrances/{fragrance}', [FragranceController::class, 'destroy'])->name('fragrances.destroy');
 
-Route::middleware('auth')->group(function () {
+    // Profile routes
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');

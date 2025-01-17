@@ -20,10 +20,13 @@ class FragranceController extends Controller
    public function index()
    {
        $fragrances = Fragrance::latest()->get();
-       
+
        return Inertia::render('Fragrances/Index', [
            'fragrances' => $fragrances,
-           'canManage' => $this->canManageFragrances()
+           'canManage' => $this->canManageFragrances(),
+           'auth' => [
+            'user' => Auth::user(),
+           ],
        ]);
    }
 
@@ -48,7 +51,7 @@ class FragranceController extends Controller
        if (!$this->canManageFragrances()) {
            abort(403);
        }
-
+   
        $validatedData = $request->validate([
            'name' => 'required|string|max:255',
            'brand' => 'required|string|max:255',
@@ -56,10 +59,13 @@ class FragranceController extends Controller
            'description' => 'required|string',
            'price' => 'required|numeric|min:0',
        ]);
-
+   
+       // Add user_id to the array after validation
        $validatedData['user_id'] = Auth::id();
+       
+       // Remove the dd() and store the data
        $fragrance = Fragrance::create($validatedData);
-
+   
        return redirect()->route('fragrances.index')
            ->with('success', 'Fragrance created successfully.');
    }
