@@ -12,7 +12,8 @@ class Fragrance extends Model
         'brand',
         'scent_type',
         'description',
-        'price'
+        'price',
+        'user_id'
     ];
 
     public function user(): BelongsTo
