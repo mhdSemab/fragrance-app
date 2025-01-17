@@ -30,6 +30,18 @@ export default function AuthenticatedLayout({ header, children }) {
                                 >
                                     Dashboard
                                 </NavLink>
+                                <NavLink
+                                    href={route('fragrances.index')}
+                                    active={route().current('fragrances.index')}
+                                >
+                                    Fragrances
+                                </NavLink>
+                                <NavLink
+                                    href={route('about')}
+                                    active={route().current('about')}
+                                >
+                                    About
+                                </NavLink>
                             </div>
                         </div>
 
@@ -133,6 +145,18 @@ export default function AuthenticatedLayout({ header, children }) {
                             active={route().current('dashboard')}
                         >
                             Dashboard
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            href={route('fragrances.index')}
+                            active={route().current('fragrances.index')}
+                        >
+                            Fragrances
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            href={route('about')}
+                            active={route().current('about')}
+                        >
+                            About
                         </ResponsiveNavLink>
                     </div>
 
