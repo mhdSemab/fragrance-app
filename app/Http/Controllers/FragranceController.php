@@ -79,10 +79,10 @@ class FragranceController extends Controller
            'price' => 'required|numeric|min:0',
        ]);
    
-       // Add user_id to the array after validation
+       
        $validatedData['user_id'] = Auth::id();
        
-       // Remove the dd() and store the data
+       
        $fragrance = Fragrance::create($validatedData);
    
        return redirect()->route('fragrances.index')

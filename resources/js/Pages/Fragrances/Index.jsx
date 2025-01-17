@@ -16,8 +16,8 @@ export default function Index({ auth, fragrances, canManage, filters }) {
 
     // Reset Filters Button
     const handleReset = () => {
-        reset({ search: '', min_price: '', max_price: '' }); // Explicitly clear all fields
-        get(route('fragrances.index'), { replace: true }); // Fetch the unfiltered results
+        reset({ search: '', min_price: '', max_price: '' }); 
+        get(route('fragrances.index'), { replace: true }); 
     };
 
     return (
