@@ -17,19 +17,38 @@ class FragranceController extends Controller
        return $user->hasAnyRole(['admin', 'seller']);
    }
 
-   public function index()
+   public function index(Request $request)
    {
-       $fragrances = Fragrance::latest()->get();
-
+       $query = Fragrance::query();
+   
+       // Search functionality
+       if ($request->filled('search')) {
+           $query->where('name', 'like', '%' . $request->input('search') . '%')
+                 ->orWhere('brand', 'like', '%' . $request->input('search') . '%');
+       }
+   
+       // Price filtering
+       if ($request->filled('min_price')) {
+           $query->where('price', '>=', $request->input('min_price'));
+       }
+       if ($request->filled('max_price')) {
+           $query->where('price', '<=', $request->input('max_price'));
+       }
+   
+       // Pagination with query parameters appended
+       $fragrances = $query->latest()->paginate(9)->appends($request->query());
+   
        return Inertia::render('Fragrances/Index', [
            'fragrances' => $fragrances,
            'canManage' => $this->canManageFragrances(),
            'auth' => [
-            'user' => Auth::user(),
+               'user' => Auth::user(),
            ],
+           'filters' => $request->only(['search', 'min_price', 'max_price']),
        ]);
    }
-
+   
+   
    public function show(Fragrance $fragrance)
    {
        return Inertia::render('Fragrances/Show', [
